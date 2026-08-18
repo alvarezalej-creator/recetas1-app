@@ -11,7 +11,7 @@ class Ingredient:
     """Ingrediente de una receta."""
 
     name: str
-    quantity: Optional[float] = None
+    quantity: Optional[str] = None
     unit: Optional[str] = None
     id: Optional[int] = None
 
@@ -20,7 +20,7 @@ class Ingredient:
 class Step:
     """Paso de preparación de una receta."""
 
-    step_number: int
+    order_index: int
     description: str
     id: Optional[int] = None
 
@@ -229,12 +229,12 @@ class RecipeModel:
     @staticmethod
     def _get_steps(conn: sqlite3.Connection, recipe_id: int) -> list[Step]:
         rows = conn.execute(
-            "SELECT id, step_number, description FROM steps "
-            "WHERE recipe_id = ? ORDER BY step_number",
+            "SELECT id, order_index, description FROM steps "
+            "WHERE recipe_id = ? ORDER BY order_index",
             (recipe_id,),
         ).fetchall()
         return [
-            Step(id=row["id"], step_number=row["step_number"], description=row["description"])
+            Step(id=row["id"], order_index=row["order_index"], description=row["description"])
             for row in rows
         ]
 
@@ -252,6 +252,6 @@ class RecipeModel:
     def _insert_steps(conn: sqlite3.Connection, recipe_id: int, steps: list[Step]) -> None:
         for step in steps:
             conn.execute(
-                "INSERT INTO steps (recipe_id, step_number, description) VALUES (?, ?, ?)",
-                (recipe_id, step.step_number, step.description),
+                "INSERT INTO steps (recipe_id, order_index, description) VALUES (?, ?, ?)",
+                (recipe_id, step.order_index, step.description),
             )

@@ -51,7 +51,7 @@ class Database:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 recipe_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
-                quantity REAL,
+                quantity TEXT,
                 unit TEXT,
                 FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )
@@ -62,7 +62,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS steps (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 recipe_id INTEGER NOT NULL,
-                step_number INTEGER NOT NULL,
+                order_index INTEGER NOT NULL,
                 description TEXT NOT NULL,
                 FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )

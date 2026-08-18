@@ -54,17 +54,6 @@ def prompt_int(text: str, allow_empty: bool = False) -> Optional[int]:
         return value
 
 
-def prompt_float(text: str) -> Optional[float]:
-    raw = input(text).strip()
-    if not raw:
-        return None
-    try:
-        return float(raw)
-    except ValueError:
-        print("Cantidad no válida, se guardará vacía.")
-        return None
-
-
 def prompt_confirm(text: str) -> bool:
     return input(text).strip().lower() in ("s", "si", "sí")
 
@@ -101,8 +90,8 @@ def print_recipe_detail(recipe: Recipe) -> None:
     print("\nPasos:")
     if not recipe.steps:
         print("  (sin pasos)")
-    for step in sorted(recipe.steps, key=lambda s: s.step_number):
-        print(f"  {step.step_number}. {step.description}")
+    for step in sorted(recipe.steps, key=lambda s: s.order_index):
+        print(f"  {step.order_index}. {step.description}")
 
 
 def print_categories_with_counts(categories: list[tuple[Category, int]]) -> None:
@@ -125,7 +114,7 @@ def prompt_ingredients() -> list[Ingredient]:
                 break
             print("Debes añadir al menos un ingrediente.")
             continue
-        quantity = prompt_float("    cantidad (opcional): ")
+        quantity = prompt("    cantidad (opcional, ej. 2 o 1/2): ") or None
         unit = prompt("    unidad (opcional): ") or None
         ingredients.append(Ingredient(name=name, quantity=quantity, unit=unit))
     return ingredients
@@ -141,5 +130,5 @@ def prompt_steps() -> list[Step]:
                 break
             print("Debes añadir al menos un paso.")
             continue
-        steps.append(Step(step_number=len(steps) + 1, description=description))
+        steps.append(Step(order_index=len(steps) + 1, description=description))
     return steps
