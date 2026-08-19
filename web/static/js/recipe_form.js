@@ -27,7 +27,28 @@ function addStepRow(value) {
   list.appendChild(clone);
 }
 
+function setupImagePreview() {
+  const input = document.getElementById("image-url-input");
+  const preview = document.getElementById("image-url-preview");
+  if (!input || !preview) return;
+  const update = () => {
+    const url = input.value.trim();
+    if (url) {
+      preview.src = url;
+      preview.style.display = "";
+    } else {
+      preview.style.display = "none";
+    }
+  };
+  preview.addEventListener("error", () => {
+    preview.style.display = "none";
+  });
+  input.addEventListener("input", update);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupImagePreview();
+
   const addIngredientButton = document.getElementById("add-ingredient");
   const addStepButton = document.getElementById("add-step");
   if (!addIngredientButton || !addStepButton) {

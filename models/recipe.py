@@ -39,6 +39,7 @@ class Recipe:
     updated_at: str
     category_name: Optional[str] = None
     is_favorite: bool = False
+    image_url: Optional[str] = None
     ingredients: list[Ingredient] = field(default_factory=list)
     steps: list[Step] = field(default_factory=list)
 
@@ -96,6 +97,7 @@ class RecipeModel:
         servings: Optional[int],
         ingredients: list[Ingredient],
         steps: list[Step],
+        image_url: Optional[str] = None,
     ) -> Recipe:
         now = datetime.now().isoformat(timespec="seconds")
         conn = self.db.get_connection()
@@ -104,10 +106,10 @@ class RecipeModel:
                 """
                 INSERT INTO recipes
                     (name, description, category_id, prep_time_minutes,
-                     servings, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                     servings, created_at, updated_at, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (name, description, category_id, prep_time_minutes, servings, now, now),
+                (name, description, category_id, prep_time_minutes, servings, now, now, image_url),
             )
             recipe_id = cursor.lastrowid
             assert recipe_id is not None
@@ -130,6 +132,7 @@ class RecipeModel:
         servings: Optional[int],
         ingredients: Optional[list[Ingredient]] = None,
         steps: Optional[list[Step]] = None,
+        image_url: Optional[str] = None,
     ) -> None:
         now = datetime.now().isoformat(timespec="seconds")
         conn = self.db.get_connection()
@@ -138,10 +141,10 @@ class RecipeModel:
                 """
                 UPDATE recipes
                 SET name = ?, description = ?, category_id = ?,
-                    prep_time_minutes = ?, servings = ?, updated_at = ?
+                    prep_time_minutes = ?, servings = ?, updated_at = ?, image_url = ?
                 WHERE id = ?
                 """,
-                (name, description, category_id, prep_time_minutes, servings, now, recipe_id),
+                (name, description, category_id, prep_time_minutes, servings, now, image_url, recipe_id),
             )
             if ingredients is not None:
                 conn.execute("DELETE FROM ingredients WHERE recipe_id = ?", (recipe_id,))
@@ -255,6 +258,7 @@ class RecipeModel:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
             is_favorite=bool(row["is_favorite"]),
+            image_url=row["image_url"],
         )
 
     @staticmethod

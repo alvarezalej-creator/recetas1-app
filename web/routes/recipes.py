@@ -18,6 +18,7 @@ class RecipeFormData:
     category_name: str = ""
     prep_time_minutes: str = ""
     servings: str = ""
+    image_url: str = ""
     ingredients: list[dict[str, str]] = field(default_factory=list)
     steps: list[dict[str, str]] = field(default_factory=list)
 
@@ -37,6 +38,16 @@ def _parse_positive_int(raw: str, field_label: str, errors: list[str]) -> Option
     return value
 
 
+def _parse_image_url(raw: str, errors: list[str]) -> Optional[str]:
+    raw = raw.strip()
+    if not raw:
+        return None
+    if not (raw.startswith("http://") or raw.startswith("https://")):
+        errors.append("La URL de la foto debe empezar con http:// o https://.")
+        return None
+    return raw
+
+
 @dataclass
 class ParsedRecipeForm:
     """Resultado de parsear y validar un submit del formulario de receta."""
@@ -46,6 +57,7 @@ class ParsedRecipeForm:
     steps: list[Step]
     prep_time_minutes: Optional[int]
     servings: Optional[int]
+    image_url: Optional[str]
     errors: list[str]
 
 
@@ -62,6 +74,9 @@ def _parse_recipe_form(form: "ImmutableMultiDict[str, str]") -> ParsedRecipeForm
         prep_time_raw, "El tiempo de preparación", errors
     )
     servings = _parse_positive_int(servings_raw, "Las porciones", errors)
+
+    image_url_raw = form.get("image_url", "")
+    image_url = _parse_image_url(image_url_raw, errors)
 
     ingredient_names = form.getlist("ingredient_name[]")
     ingredient_quantities = form.getlist("ingredient_quantity[]")
@@ -97,6 +112,7 @@ def _parse_recipe_form(form: "ImmutableMultiDict[str, str]") -> ParsedRecipeForm
         category_name=form.get("category_name", "").strip(),
         prep_time_minutes=prep_time_raw,
         servings=servings_raw,
+        image_url=image_url_raw.strip(),
         ingredients=ingredient_rows,
         steps=step_rows,
     )
@@ -106,6 +122,7 @@ def _parse_recipe_form(form: "ImmutableMultiDict[str, str]") -> ParsedRecipeForm
         steps=steps,
         prep_time_minutes=prep_time_minutes,
         servings=servings,
+        image_url=image_url,
         errors=errors,
     )
 
@@ -183,6 +200,7 @@ def create_recipes_blueprint(
             servings=parsed.servings,
             ingredients=parsed.ingredients,
             steps=parsed.steps,
+            image_url=parsed.image_url,
         )
         flash(f"Receta '{recipe.name}' creada.", "success")
         return redirect(url_for("recipes.recipe_detail", recipe_id=recipe.id))
@@ -208,6 +226,7 @@ def create_recipes_blueprint(
             category_name=recipe.category_name or "",
             prep_time_minutes=str(recipe.prep_time_minutes) if recipe.prep_time_minutes else "",
             servings=str(recipe.servings) if recipe.servings else "",
+            image_url=recipe.image_url or "",
             ingredients=[
                 {
                     "name": ingredient.name,
@@ -262,6 +281,7 @@ def create_recipes_blueprint(
             servings=parsed.servings,
             ingredients=parsed.ingredients,
             steps=parsed.steps,
+            image_url=parsed.image_url,
         )
         flash("Receta actualizada.", "success")
         return redirect(url_for("recipes.recipe_detail", recipe_id=recipe_id))
