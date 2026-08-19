@@ -1,0 +1,34 @@
+{% if not recipes %}
+  <p class="empty-state">No hay recetas para mostrar.</p>
+{% else %}
+  <table class="recipes-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Tiempo (min)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for recipe in recipes %}
+        <tr>
+          <td>{{ recipe.id }}</td>
+          <td>{{ recipe.name }}</td>
+          <td>{{ recipe.category_name or "-" }}</td>
+          <td>{{ recipe.prep_time_minutes or "-" }}</td>
+          <td class="row-actions">
+            <a href="{{ url_for('recipes.recipe_detail', recipe_id=recipe.id) }}">Ver</a>
+            <a href="{{ url_for('recipes.edit_recipe_form', recipe_id=recipe.id) }}">Editar</a>
+            <form class="delete-form" method="post"
+                  action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}"
+                  data-confirm="¿Eliminar la receta '{{ recipe.name }}'?">
+              <button type="submit" class="link-button">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

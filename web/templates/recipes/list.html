@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Recetas · Gestor de Recetas{% endblock %}
+{% block content %}
+  <h1>Recetas</h1>
+
+  <form class="search-form" method="get" action="{{ url_for('recipes.list_recipes') }}">
+    <select name="field">
+      <option value="name" {% if field == "name" %}selected{% endif %}>Por nombre</option>
+      <option value="ingredient" {% if field == "ingredient" %}selected{% endif %}>Por ingrediente</option>
+      <option value="category" {% if field == "category" %}selected{% endif %}>Por categoría</option>
+    </select>
+    <input type="text" name="q" placeholder="Buscar..." value="{{ query }}">
+    <select name="category_id">
+      <option value="">-- categoría --</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}" {% if category_id == category.id|string %}selected{% endif %}>
+          {{ category.name }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit">Buscar</button>
+    <a href="{{ url_for('recipes.list_recipes') }}">Ver todas</a>
+  </form>
+
+  {% include "recipes/_table.html" %}
+{% endblock %}

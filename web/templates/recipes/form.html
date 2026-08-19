@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar receta" if is_edit else "Nueva receta" }} · Gestor de Recetas{% endblock %}
+{% block content %}
+  <h1>{{ "Editar receta" if is_edit else "Añadir receta" }}</h1>
+
+  <form method="post" action="{{ form_action }}" id="recipe-form">
+    <label>
+      Nombre
+      <input type="text" name="name" value="{{ form_data.name }}" required>
+    </label>
+
+    <label>
+      Categoría
+      <input type="text" name="category_name" list="category-options" value="{{ form_data.category_name }}">
+      <datalist id="category-options">
+        {% for category in categories %}
+          <option value="{{ category.name }}">
+        {% endfor %}
+      </datalist>
+    </label>
+
+    <label>
+      Descripción
+      <textarea name="description">{{ form_data.description }}</textarea>
+    </label>
+
+    <label>
+      Tiempo de preparación (minutos)
+      <input type="text" name="prep_time_minutes" value="{{ form_data.prep_time_minutes }}">
+    </label>
+
+    <label>
+      Porciones
+      <input type="text" name="servings" value="{{ form_data.servings }}">
+    </label>
+
+    <fieldset>
+      <legend>Ingredientes</legend>
+      <template id="ingredient-row-template">
+        <div class="ingredient-row">
+          <input type="text" name="ingredient_name[]" placeholder="Nombre" required>
+          <input type="text" name="ingredient_quantity[]" placeholder="Cantidad (ej. 2 o 1/2)">
+          <input type="text" name="ingredient_unit[]" placeholder="Unidad">
+          <button type="button" class="remove-row">Eliminar</button>
+        </div>
+      </template>
+      <div id="ingredients-list"></div>
+      <button type="button" id="add-ingredient">+ agregar ingrediente</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pasos</legend>
+      <template id="step-row-template">
+        <div class="step-row">
+          <textarea name="step_description[]" placeholder="Descripción del paso" required></textarea>
+          <button type="button" class="remove-row">Eliminar</button>
+        </div>
+      </template>
+      <div id="steps-list"></div>
+      <button type="button" id="add-step">+ agregar paso</button>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit">{{ "Guardar cambios" if is_edit else "Crear receta" }}</button>
+      <a href="{{ url_for('recipes.list_recipes') }}">Cancelar</a>
+    </div>
+  </form>
+
+  <script id="initial-ingredients" type="application/json">{{ form_data.ingredients | tojson }}</script>
+  <script id="initial-steps" type="application/json">{{ form_data.steps | tojson }}</script>
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/recipe_form.js') }}"></script>
+{% endblock %}

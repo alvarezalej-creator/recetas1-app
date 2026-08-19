@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.name }} · Gestor de Recetas{% endblock %}
+{% block content %}
+  <h1>{{ recipe.name }}</h1>
+  <dl class="recipe-meta">
+    <dt>Categoría</dt><dd>{{ recipe.category_name or "-" }}</dd>
+    <dt>Descripción</dt><dd>{{ recipe.description or "-" }}</dd>
+    <dt>Tiempo de preparación</dt><dd>{{ recipe.prep_time_minutes or "-" }} minutos</dd>
+    <dt>Porciones</dt><dd>{{ recipe.servings or "-" }}</dd>
+  </dl>
+
+  <h2>Ingredientes</h2>
+  {% if recipe.ingredients %}
+    <ul>
+      {% for ingredient in recipe.ingredients %}
+        <li>
+          {%- if ingredient.quantity %}{{ ingredient.quantity }} {% endif -%}
+          {%- if ingredient.unit %}{{ ingredient.unit }} {% endif -%}
+          {{ ingredient.name }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">(sin ingredientes)</p>
+  {% endif %}
+
+  <h2>Pasos</h2>
+  {% if recipe.steps %}
+    <ol>
+      {% for step in recipe.steps|sort(attribute="order_index") %}
+        <li>{{ step.description }}</li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="empty-state">(sin pasos)</p>
+  {% endif %}
+
+  <div class="actions">
+    <a href="{{ url_for('recipes.edit_recipe_form', recipe_id=recipe.id) }}">Editar</a>
+    <form class="delete-form" method="post"
+          action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}"
+          data-confirm="¿Eliminar la receta '{{ recipe.name }}'?">
+      <button type="submit" class="link-button">Eliminar</button>
+    </form>
+    <a href="{{ url_for('recipes.list_recipes') }}">Volver al listado</a>
+  </div>
+{% endblock %}
