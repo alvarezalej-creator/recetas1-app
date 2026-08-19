@@ -2,7 +2,8 @@
 {% block title %}{{ recipe.name }} · Gestor de Recetas{% endblock %}
 {% block content %}
   {% if recipe.image_url %}
-    <img class="recipe-hero-photo" src="{{ recipe.image_url }}" alt="Foto de {{ recipe.name }}">
+    <img class="recipe-hero-photo" src="{{ recipe.image_url }}" alt="Foto de {{ recipe.name }}"
+         onerror="onRecipePhotoError(this)">
   {% else %}
     <div class="recipe-hero-photo recipe-hero-photo-placeholder" aria-hidden="true">🍳</div>
   {% endif %}
