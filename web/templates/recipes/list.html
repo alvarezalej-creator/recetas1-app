@@ -18,6 +18,10 @@
         </option>
       {% endfor %}
     </select>
+    <label class="favorites-filter">
+      <input type="checkbox" name="favorites" value="1" {% if only_favorites %}checked{% endif %}>
+      Solo favoritas
+    </label>
     <button type="submit">Buscar</button>
     <a href="{{ url_for('recipes.list_recipes') }}">Ver todas</a>
   </form>

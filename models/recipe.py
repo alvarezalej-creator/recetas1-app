@@ -38,6 +38,7 @@ class Recipe:
     created_at: str
     updated_at: str
     category_name: Optional[str] = None
+    is_favorite: bool = False
     ingredients: list[Ingredient] = field(default_factory=list)
     steps: list[Step] = field(default_factory=list)
 
@@ -48,14 +49,16 @@ class RecipeModel:
     def __init__(self, db: Database) -> None:
         self.db = db
 
-    def list_all(self) -> list[Recipe]:
+    def list_all(self, only_favorites: bool = False) -> list[Recipe]:
+        where = "r.is_favorite = 1" if only_favorites else "1 = 1"
         conn = self.db.get_connection()
         try:
             rows = conn.execute(
-                """
+                f"""
                 SELECT r.*, c.name AS category_name
                 FROM recipes r
                 LEFT JOIN categories c ON c.id = r.category_id
+                WHERE {where}
                 ORDER BY r.name
                 """
             ).fetchall()
@@ -160,19 +163,20 @@ class RecipeModel:
         finally:
             conn.close()
 
-    def search_by_name(self, query: str) -> list[Recipe]:
-        return self._search("r.name LIKE ?", f"%{query}%")
+    def search_by_name(self, query: str, only_favorites: bool = False) -> list[Recipe]:
+        return self._search("r.name LIKE ?", f"%{query}%", only_favorites)
 
-    def search_by_ingredient(self, query: str) -> list[Recipe]:
+    def search_by_ingredient(self, query: str, only_favorites: bool = False) -> list[Recipe]:
+        favorite_clause = " AND r.is_favorite = 1" if only_favorites else ""
         conn = self.db.get_connection()
         try:
             rows = conn.execute(
-                """
+                f"""
                 SELECT DISTINCT r.*, c.name AS category_name
                 FROM recipes r
                 LEFT JOIN categories c ON c.id = r.category_id
                 JOIN ingredients i ON i.recipe_id = r.id
-                WHERE i.name LIKE ?
+                WHERE i.name LIKE ?{favorite_clause}
                 ORDER BY r.name
                 """,
                 (f"%{query}%",),
@@ -181,10 +185,12 @@ class RecipeModel:
         finally:
             conn.close()
 
-    def search_by_category(self, category_id: int) -> list[Recipe]:
-        return self._search("r.category_id = ?", category_id)
+    def search_by_category(self, category_id: int, only_favorites: bool = False) -> list[Recipe]:
+        return self._search("r.category_id = ?", category_id, only_favorites)
 
-    def _search(self, where: str, param: object) -> list[Recipe]:
+    def _search(self, where: str, param: object, only_favorites: bool = False) -> list[Recipe]:
+        if only_favorites:
+            where = f"{where} AND r.is_favorite = 1"
         conn = self.db.get_connection()
         try:
             rows = conn.execute(
@@ -201,6 +207,41 @@ class RecipeModel:
         finally:
             conn.close()
 
+    def toggle_favorite(self, recipe_id: int) -> Optional[Recipe]:
+        """Alterna el estado de favorito de una receta. None si no existe."""
+        conn = self.db.get_connection()
+        try:
+            row = conn.execute(
+                "SELECT is_favorite FROM recipes WHERE id = ?", (recipe_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            new_value = 0 if row["is_favorite"] else 1
+            conn.execute(
+                "UPDATE recipes SET is_favorite = ? WHERE id = ?",
+                (new_value, recipe_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        return self.get_by_id(recipe_id)
+
+    def get_shopping_list(self, recipe_id: int) -> Optional[list[Ingredient]]:
+        """Ingredientes de una receta, listos para lista de la compra.
+
+        None si la receta no existe.
+        """
+        conn = self.db.get_connection()
+        try:
+            row = conn.execute(
+                "SELECT id FROM recipes WHERE id = ?", (recipe_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            return self._get_ingredients(conn, recipe_id)
+        finally:
+            conn.close()
+
     @staticmethod
     def _row_to_recipe(row: sqlite3.Row) -> Recipe:
         return Recipe(
@@ -213,6 +254,7 @@ class RecipeModel:
             servings=row["servings"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            is_favorite=bool(row["is_favorite"]),
         )
 
     @staticmethod

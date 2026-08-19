@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ recipe.name }} · Gestor de Recetas{% endblock %}
 {% block content %}
-  <h1>{{ recipe.name }}</h1>
+  <h1>{{ recipe.name }} {% if recipe.is_favorite %}★{% endif %}</h1>
+  <form class="favorite-form" method="post"
+        action="{{ url_for('recipes.toggle_favorite', recipe_id=recipe.id) }}">
+    <input type="hidden" name="next" value="{{ request.full_path }}">
+    <button type="submit" class="link-button">
+      {{ "Quitar de favoritos" if recipe.is_favorite else "Marcar como favorita" }}
+    </button>
+  </form>
   <dl class="recipe-meta">
     <dt>Categoría</dt><dd>{{ recipe.category_name or "-" }}</dd>
     <dt>Descripción</dt><dd>{{ recipe.description or "-" }}</dd>
@@ -36,6 +43,7 @@
   {% endif %}
 
   <div class="actions">
+    <a href="{{ url_for('recipes.shopping_list', recipe_id=recipe.id) }}">Lista de la compra</a>
     <a href="{{ url_for('recipes.edit_recipe_form', recipe_id=recipe.id) }}">Editar</a>
     <form class="delete-form" method="post"
           action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}"

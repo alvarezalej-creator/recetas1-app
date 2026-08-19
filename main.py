@@ -36,6 +36,10 @@ def run_menu(db_path: str = "data/recetas.db") -> None:
             recipe_controller.delete_recipe()
         elif choice == "7":
             category_controller.run()
+        elif choice == "8":
+            recipe_controller.toggle_favorite_flow()
+        elif choice == "9":
+            recipe_controller.shopping_list_flow()
         elif choice == "0":
             menu_view.print_message("¡Hasta luego!")
             return

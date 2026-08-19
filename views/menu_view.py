@@ -13,6 +13,8 @@ def print_main_menu() -> None:
     print("5. Editar receta")
     print("6. Eliminar receta")
     print("7. Gestionar categorías")
+    print("8. Marcar/desmarcar favorito")
+    print("9. Lista de la compra")
     print("0. Salir")
 
 
@@ -66,16 +68,22 @@ def print_recipes_table(recipes: list[Recipe]) -> None:
     if not recipes:
         print("No hay recetas para mostrar.")
         return
-    print(f"{'ID':<4} {'Nombre':<30} {'Categoría':<20} {'Tiempo (min)':<12}")
-    print("-" * 68)
+    print(f"{'ID':<4} {'★':<2} {'Nombre':<30} {'Categoría':<20} {'Tiempo (min)':<12}")
+    print("-" * 71)
     for recipe in recipes:
         category = recipe.category_name or "-"
         prep_time = str(recipe.prep_time_minutes) if recipe.prep_time_minutes else "-"
-        print(f"{recipe.id:<4} {recipe.name:<30} {category:<20} {prep_time:<12}")
+        favorite = "★" if recipe.is_favorite else " "
+        print(f"{recipe.id:<4} {favorite:<2} {recipe.name:<30} {category:<20} {prep_time:<12}")
+
+
+def prompt_only_favorites() -> bool:
+    return prompt_confirm("¿Solo favoritas? (s/n): ")
 
 
 def print_recipe_detail(recipe: Recipe) -> None:
-    print(f"\n=== {recipe.name} (id {recipe.id}) ===")
+    favorite_mark = " ★ favorita" if recipe.is_favorite else ""
+    print(f"\n=== {recipe.name} (id {recipe.id}){favorite_mark} ===")
     print(f"Categoría: {recipe.category_name or '-'}")
     print(f"Descripción: {recipe.description or '-'}")
     print(f"Tiempo de preparación: {recipe.prep_time_minutes or '-'} minutos")
@@ -102,6 +110,17 @@ def print_categories_with_counts(categories: list[tuple[Category, int]]) -> None
     print("-" * 37)
     for category, count in categories:
         print(f"{category.id:<4} {category.name:<25} {count:<8}")
+
+
+def print_shopping_list(recipe_name: str, ingredients: list[Ingredient]) -> None:
+    print(f"\n=== Lista de la compra: {recipe_name} ===")
+    if not ingredients:
+        print("  (sin ingredientes)")
+        return
+    for ingredient in ingredients:
+        quantity = f"{ingredient.quantity} " if ingredient.quantity is not None else ""
+        unit = f"{ingredient.unit} " if ingredient.unit else ""
+        print(f"  - {quantity}{unit}{ingredient.name}")
 
 
 def prompt_ingredients() -> list[Ingredient]:

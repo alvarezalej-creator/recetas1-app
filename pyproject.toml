@@ -2,11 +2,16 @@
 name = "recetas-app"
 version = "0.1.0"
 description = "Gestor de recetas de cocina - CLI interactiva"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 
 dependencies = [
     "typer>=0.9.0",
     "flask>=3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
 ]
 
 [build-system]
@@ -14,3 +19,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

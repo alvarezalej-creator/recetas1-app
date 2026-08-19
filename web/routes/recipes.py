@@ -120,15 +120,18 @@ def create_recipes_blueprint(
         field = request.args.get("field", "")
         query = request.args.get("q", "").strip()
         category_id_raw = request.args.get("category_id", "")
+        only_favorites = request.args.get("favorites", "") == "1"
 
         if field == "name" and query:
-            recipes = recipe_model.search_by_name(query)
+            recipes = recipe_model.search_by_name(query, only_favorites=only_favorites)
         elif field == "ingredient" and query:
-            recipes = recipe_model.search_by_ingredient(query)
+            recipes = recipe_model.search_by_ingredient(query, only_favorites=only_favorites)
         elif field == "category" and category_id_raw:
-            recipes = recipe_model.search_by_category(int(category_id_raw))
+            recipes = recipe_model.search_by_category(
+                int(category_id_raw), only_favorites=only_favorites
+            )
         else:
-            recipes = recipe_model.list_all()
+            recipes = recipe_model.list_all(only_favorites=only_favorites)
 
         return render_template(
             "recipes/list.html",
@@ -137,6 +140,7 @@ def create_recipes_blueprint(
             field=field,
             query=query,
             category_id=category_id_raw,
+            only_favorites=only_favorites,
         )
 
     @bp.route("/new", methods=["GET"])
@@ -261,6 +265,28 @@ def create_recipes_blueprint(
         )
         flash("Receta actualizada.", "success")
         return redirect(url_for("recipes.recipe_detail", recipe_id=recipe_id))
+
+    @bp.route("/<int:recipe_id>/favorite", methods=["POST"])
+    def toggle_favorite(recipe_id: int) -> ResponseReturnValue:
+        recipe = recipe_model.toggle_favorite(recipe_id)
+        if recipe is None:
+            flash(f"No existe ninguna receta con id {recipe_id}.", "error")
+        else:
+            estado = "marcada como favorita" if recipe.is_favorite else "desmarcada como favorita"
+            flash(f"Receta '{recipe.name}' {estado}.", "success")
+        next_url = request.form.get("next") or url_for("recipes.recipe_detail", recipe_id=recipe_id)
+        return redirect(next_url)
+
+    @bp.route("/<int:recipe_id>/shopping-list", methods=["GET"])
+    def shopping_list(recipe_id: int) -> ResponseReturnValue:
+        recipe = recipe_model.get_by_id(recipe_id)
+        if recipe is None:
+            flash(f"No existe ninguna receta con id {recipe_id}.", "error")
+            return redirect(url_for("recipes.list_recipes"))
+        ingredients = recipe_model.get_shopping_list(recipe_id) or []
+        return render_template(
+            "recipes/shopping_list.html", recipe=recipe, ingredients=ingredients
+        )
 
     @bp.route("/<int:recipe_id>/delete", methods=["POST"])
     def delete_recipe(recipe_id: int) -> ResponseReturnValue:

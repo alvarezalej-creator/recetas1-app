@@ -48,7 +48,8 @@ class RecipeController:
     # --- Listar / ver -------------------------------------------------
 
     def list_recipes(self) -> None:
-        recipes = self.recipe_model.list_all()
+        only_favorites = menu_view.prompt_only_favorites()
+        recipes = self.recipe_model.list_all(only_favorites=only_favorites)
         menu_view.print_recipes_table(recipes)
 
     def view_recipe(self) -> None:
@@ -65,10 +66,16 @@ class RecipeController:
             choice = menu_view.prompt("Elige una opción: ")
             if choice == "1":
                 query = menu_view.prompt("Nombre a buscar: ")
-                menu_view.print_recipes_table(self.recipe_model.search_by_name(query))
+                only_favorites = menu_view.prompt_only_favorites()
+                menu_view.print_recipes_table(
+                    self.recipe_model.search_by_name(query, only_favorites=only_favorites)
+                )
             elif choice == "2":
                 query = menu_view.prompt("Ingrediente a buscar: ")
-                menu_view.print_recipes_table(self.recipe_model.search_by_ingredient(query))
+                only_favorites = menu_view.prompt_only_favorites()
+                menu_view.print_recipes_table(
+                    self.recipe_model.search_by_ingredient(query, only_favorites=only_favorites)
+                )
             elif choice == "3":
                 self._search_by_category()
             elif choice == "0":
@@ -86,7 +93,10 @@ class RecipeController:
         category_id = menu_view.prompt_int("Id de categoría: ")
         if category_id is None:
             return
-        menu_view.print_recipes_table(self.recipe_model.search_by_category(category_id))
+        only_favorites = menu_view.prompt_only_favorites()
+        menu_view.print_recipes_table(
+            self.recipe_model.search_by_category(category_id, only_favorites=only_favorites)
+        )
 
     # --- Editar -----------------------------------------------------
 
@@ -148,6 +158,29 @@ class RecipeController:
             menu_view.print_message("Receta eliminada.")
         else:
             menu_view.print_message("Operación cancelada.")
+
+    # --- Favoritos (v2) ------------------------------------------------
+
+    def toggle_favorite_flow(self) -> None:
+        recipe_id = menu_view.prompt_int("Id de la receta: ")
+        if recipe_id is None:
+            return
+        recipe = self.recipe_model.toggle_favorite(recipe_id)
+        if recipe is None:
+            menu_view.print_message(f"No existe ninguna receta con id {recipe_id}.")
+            return
+        estado = "marcada como favorita ★" if recipe.is_favorite else "desmarcada como favorita"
+        menu_view.print_message(f"Receta '{recipe.name}' {estado}.")
+
+    # --- Lista de la compra (v2) ---------------------------------------
+
+    def shopping_list_flow(self) -> None:
+        recipe_id = menu_view.prompt_int("Id de la receta: ")
+        recipe = self._get_existing(recipe_id)
+        if recipe is None:
+            return
+        ingredients = self.recipe_model.get_shopping_list(recipe.id)
+        menu_view.print_shopping_list(recipe.name, ingredients or [])
 
     # --- Utilidades ---------------------------------------------------
 

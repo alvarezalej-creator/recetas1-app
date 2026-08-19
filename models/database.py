@@ -67,6 +67,17 @@ class Database:
                 FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )
         """)
-        
+
+        self._migrate_add_favorite_column(cursor)
+
         conn.commit()
         conn.close()
+
+    @staticmethod
+    def _migrate_add_favorite_column(cursor: sqlite3.Cursor) -> None:
+        """Añade recipes.is_favorite si falta (migración idempotente v2)."""
+        columns = {row[1] for row in cursor.execute("PRAGMA table_info(recipes)")}
+        if "is_favorite" not in columns:
+            cursor.execute(
+                "ALTER TABLE recipes ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0"
+            )
