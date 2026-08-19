@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Lista de la compra: {{ recipe.name }} · Gestor de Recetas{% endblock %}
+{% block content %}
+  <h1>Lista de la compra</h1>
+  <h2>{{ recipe.name }}</h2>
+
+  {% if ingredients %}
+    <ul class="shopping-list">
+      {% for ingredient in ingredients %}
+        <li>
+          {%- if ingredient.quantity %}{{ ingredient.quantity }} {% endif -%}
+          {%- if ingredient.unit %}{{ ingredient.unit }} {% endif -%}
+          {{ ingredient.name }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">(sin ingredientes)</p>
+  {% endif %}
+
+  <div class="actions">
+    <a href="{{ url_for('recipes.recipe_detail', recipe_id=recipe.id) }}">Volver a la receta</a>
+  </div>
+{% endblock %}

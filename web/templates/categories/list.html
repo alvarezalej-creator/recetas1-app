@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Categorías · Gestor de Recetas{% endblock %}
+{% block content %}
+  <h1>Categorías</h1>
+
+  {% if not rows %}
+    <p class="empty-state">No hay categorías todavía.</p>
+  {% else %}
+    <table class="recipes-table">
+      <thead>
+        <tr><th>ID</th><th>Nombre</th><th>Recetas</th></tr>
+      </thead>
+      <tbody>
+        {% for category, count in rows %}
+          <tr>
+            <td>{{ category.id }}</td>
+            <td>{{ category.name }}</td>
+            <td>{{ count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2>Nueva categoría</h2>
+  <form method="post" action="{{ url_for('categories.create_category') }}">
+    <label>
+      Nombre
+      <input type="text" name="name" required>
+    </label>
+    <button type="submit">Crear</button>
+  </form>
+{% endblock %}
