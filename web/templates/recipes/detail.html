@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ recipe.name }} · Gestor de Recetas{% endblock %}
 {% block content %}
+  {% if recipe.image_url %}
+    <img class="recipe-hero-photo" src="{{ recipe.image_url }}" alt="Foto de {{ recipe.name }}">
+  {% else %}
+    <div class="recipe-hero-photo recipe-hero-photo-placeholder" aria-hidden="true">🍳</div>
+  {% endif %}
+
   <h1>{{ recipe.name }} {% if recipe.is_favorite %}★{% endif %}</h1>
   <form class="favorite-form" method="post"
         action="{{ url_for('recipes.toggle_favorite', recipe_id=recipe.id) }}">

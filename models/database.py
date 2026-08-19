@@ -69,6 +69,7 @@ class Database:
         """)
 
         self._migrate_add_favorite_column(cursor)
+        self._migrate_add_image_url_column(cursor)
 
         conn.commit()
         conn.close()
@@ -81,3 +82,10 @@ class Database:
             cursor.execute(
                 "ALTER TABLE recipes ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0"
             )
+
+    @staticmethod
+    def _migrate_add_image_url_column(cursor: sqlite3.Cursor) -> None:
+        """Añade recipes.image_url si falta (migración idempotente, fotos)."""
+        columns = {row[1] for row in cursor.execute("PRAGMA table_info(recipes)")}
+        if "image_url" not in columns:
+            cursor.execute("ALTER TABLE recipes ADD COLUMN image_url TEXT")

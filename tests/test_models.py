@@ -124,3 +124,43 @@ def test_get_shopping_list_returns_ingredients_in_order(recipe_model, category_m
 
 def test_get_shopping_list_missing_recipe_returns_none(recipe_model):
     assert recipe_model.get_shopping_list(999) is None
+
+
+# --- Foto de receta (URL externa) -------------------------------------------
+
+
+def test_create_recipe_with_image_url(recipe_model, category_model):
+    category = category_model.get_or_create("Postres")
+    recipe = recipe_model.create(
+        name="Tarta de manzana",
+        description=None,
+        category_id=category.id,
+        prep_time_minutes=None,
+        servings=None,
+        ingredients=[Ingredient(name="Manzana")],
+        steps=[Step(order_index=1, description="Hornear")],
+        image_url="https://example.com/tarta.jpg",
+    )
+    assert recipe.image_url == "https://example.com/tarta.jpg"
+    fetched = recipe_model.get_by_id(recipe.id)
+    assert fetched.image_url == "https://example.com/tarta.jpg"
+
+
+def test_create_recipe_without_image_url_defaults_to_none(recipe_model, category_model):
+    recipe = _make_recipe(recipe_model, category_model)
+    assert recipe.image_url is None
+
+
+def test_update_recipe_changes_image_url(recipe_model, category_model):
+    created = _make_recipe(recipe_model, category_model)
+    recipe_model.update(
+        recipe_id=created.id,
+        name=created.name,
+        description=created.description,
+        category_id=created.category_id,
+        prep_time_minutes=created.prep_time_minutes,
+        servings=created.servings,
+        image_url="https://example.com/foto.jpg",
+    )
+    updated = recipe_model.get_by_id(created.id)
+    assert updated.image_url == "https://example.com/foto.jpg"

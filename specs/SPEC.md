@@ -3,6 +3,8 @@
 > **v2**: añade favoritos y lista de la compra (fuera de alcance en v1).
 > También aplica a la interfaz web adicional (`web/`), no solo a la CLI.
 > Ver marcas «(v2)» en cada sección.
+> **v3**: foto de receta vía URL externa (solo interfaz web) y rediseño
+> visual (paleta cálida, tarjetas con foto). Ver marcas «(v3)».
 
 ## 1. Visión general
 Aplicación de recetas de cocina en Python, con dos interfaces sobre el mismo
@@ -38,6 +40,13 @@ combinando varias recetas, marcar ítems como comprados de forma persistente,
 normalización/conversión de unidades, imágenes, importar/exportar,
 multiusuario.
 
+**v3**: se incorpora una foto por receta, solo como **URL externa** (no se
+suben archivos al servidor) — campo `image_url` opcional en el formulario
+web de alta/edición, mostrado como miniatura en el listado (tarjetas) y como
+foto grande en el detalle; placeholder 🍳 si no hay foto. No disponible desde
+la CLI (es una funcionalidad de la interfaz web). Además, rediseño visual de
+la web: paleta cálida gastronómica, listado en tarjetas en vez de tabla.
+
 ## 3. Modelo de datos
 
 ### Tabla `categories`
@@ -58,6 +67,7 @@ multiusuario.
 | created_at | TEXT (ISO datetime) | |
 | updated_at | TEXT (ISO datetime) | |
 | is_favorite | INTEGER NOT NULL DEFAULT 0 | (v2) 0/1. Añadida vía `ALTER TABLE ... ADD COLUMN` idempotente en `Database.init_db()`, compatible con bases ya existentes. |
+| image_url | TEXT | (v3) Nullable. URL externa de la foto de la receta; no se almacenan archivos. Misma migración idempotente. |
 
 ### Tabla `ingredients`
 | Campo | Tipo | Notas |

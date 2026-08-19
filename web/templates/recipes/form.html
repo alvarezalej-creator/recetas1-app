@@ -25,6 +25,15 @@
     </label>
 
     <label>
+      Foto (URL, opcional)
+      <input type="url" name="image_url" id="image-url-input"
+             placeholder="https://..." value="{{ form_data.image_url }}">
+    </label>
+    <img id="image-url-preview" class="image-preview"
+         src="{{ form_data.image_url }}" alt="Vista previa de la foto"
+         style="{{ '' if form_data.image_url else 'display:none;' }}">
+
+    <label>
       Tiempo de preparación (minutos)
       <input type="text" name="prep_time_minutes" value="{{ form_data.prep_time_minutes }}">
     </label>
