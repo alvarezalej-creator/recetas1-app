@@ -6,7 +6,8 @@
       <article class="recipe-card">
         <a class="recipe-card-photo-link" href="{{ url_for('recipes.recipe_detail', recipe_id=recipe.id) }}">
           {% if recipe.image_url %}
-            <img class="recipe-card-photo" src="{{ recipe.image_url }}" alt="Foto de {{ recipe.name }}" loading="lazy">
+            <img class="recipe-card-photo" src="{{ recipe.image_url }}" alt="Foto de {{ recipe.name }}"
+                 loading="lazy" onerror="onRecipePhotoError(this)">
           {% else %}
             <div class="recipe-card-photo recipe-card-photo-placeholder" aria-hidden="true">🍳</div>
           {% endif %}
